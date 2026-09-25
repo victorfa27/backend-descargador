@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descargador de Videos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">Descargador de Videos</h1>
+        <div class="mb-4">
+            <input type="text" id="videoUrl" placeholder="Pega el enlace del video aquí..." class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <button onclick="downloadVideo()" id="downloadBtn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300">Obtener Enlace</button>
+        
+        <div id="loading" class="hidden mt-4 text-center text-gray-600">Procesando...</div>
+        <div id="error" class="hidden mt-4 text-center text-red-500"></div>
+        
+        <div id="result" class="hidden mt-6">
+            <img id="thumbnail" src="" alt="Thumbnail" class="w-full rounded-md mb-4">
+            <h2 id="title" class="text-lg font-semibold mb-4 text-gray-800"></h2>
+            <a id="downloadLink" href="" target="_blank" class="block w-full bg-green-500 text-white text-center font-bold py-2 px-4 rounded hover:bg-green-600 transition duration-300">Descargar Video</a>
+        </div>
+    </div>
+
+    <script>
+        // ¡REEMPLAZA ESTA URL POR LA QUE TE DE RENDER!
+        const BACKEND_URL = "https://TU-PROYECTO-RENDER.onrender.com"; 
+
+        async function downloadVideo() {
+            const urlInput = document.getElementById('videoUrl').value;
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            
+            if (!urlInput) {
+                errorDiv.textContent = "Por favor ingresa una URL válida";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            errorDiv.classList.add('hidden');
+            resultDiv.classList.add('hidden');
+            loadingDiv.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/download?url=${encodeURIComponent(urlInput)}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('title').textContent = data.title;
+                    document.getElementById('thumbnail').src = data.thumbnail;
+                    
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = data.url;
+                    
+                    resultDiv.classList.remove('hidden');
+                } else {
+                    throw new Error(data.detail || "Error al procesar el video");
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                loadingDiv.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
